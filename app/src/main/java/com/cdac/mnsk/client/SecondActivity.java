@@ -16,7 +16,7 @@ import android.widget.Toast;
 
 public class SecondActivity extends AppCompatActivity {
 
-
+    static int user_ok = 0, pass_ok = 0;
     String ipAddr;
     TextView textResponse;
     EditText ftpCommand;
@@ -90,6 +90,7 @@ public class SecondActivity extends AppCompatActivity {
             {   controlSocketOut.println(method);
                 try {
                     controlResponse = controlSocketIn.readLine();
+                    if(!(user_ok == 1 && pass_ok == 1))
                     controlResponse += "\n"+controlSocketIn.readLine();
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -115,6 +116,8 @@ public class SecondActivity extends AppCompatActivity {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
+                if(controlResponse.contains("331"))
+                    user_ok = 1;
                 Updateconv.post(new updateUIThread(controlResponse));
 
             }
@@ -126,6 +129,8 @@ public class SecondActivity extends AppCompatActivity {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
+                if(controlResponse.contains("230"))
+                    pass_ok = 1;
                 Updateconv.post(new updateUIThread(controlResponse));
 
             }
@@ -177,20 +182,22 @@ public class SecondActivity extends AppCompatActivity {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-
-                //controlSocketOut.println(method);
-                BufferedReader datapSocketIn = null;
-                try {
-                    datapSocketIn = new BufferedReader(new InputStreamReader(dataSocket.getInputStream()));
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                try {
-                    controlResponse = datapSocketIn.readLine();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                Updateconv.post(new updateUIThread(controlResponse));
+                if(!(controlResponse.contains("332") || controlResponse.contains("450")) ) {
+                    //controlSocketOut.println(method);
+                    BufferedReader datapSocketIn = null;
+                    try {
+                        datapSocketIn = new BufferedReader(new InputStreamReader(dataSocket.getInputStream()));
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    try {
+                        controlResponse = datapSocketIn.readLine();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    Updateconv.post(new updateUIThread(controlResponse));
+                }else
+                    Updateconv.post(new updateUIThread(controlResponse));
             }
             if (method.contains("LIST")) {
                 //String[] inpToken = method.split(" ");
@@ -266,48 +273,51 @@ public class SecondActivity extends AppCompatActivity {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                Updateconv.post(new updateUIThread(controlResponse));
-                //Socket dataSocket = new Socket(serverAddress, 1220);
-                //System.out.println(dataSocket);
-                // BufferedReader SocketIn = new BufferedReader(new InputStreamReader(dataSocket.getInputStream()));
-                //this.socketIn = new BufferedReader(new InputStreamReader(this.dataSocket.getInputStream()));
-                String[] responseToken = method.split(" ");
-                String fileName = responseToken[1];
+                if(!(controlResponse.contains("332") || controlResponse.contains("450")) ) {
+                    Updateconv.post(new updateUIThread(controlResponse));
+                    //Socket dataSocket = new Socket(serverAddress, 1220);
+                    //System.out.println(dataSocket);
+                    // BufferedReader SocketIn = new BufferedReader(new InputStreamReader(dataSocket.getInputStream()));
+                    //this.socketIn = new BufferedReader(new InputStreamReader(this.dataSocket.getInputStream()));
+                    String[] responseToken = method.split(" ");
+                    String fileName = responseToken[1];
 
-                String fpath = "/sdcard/"+fileName;
+                    String fpath = "/sdcard/" + fileName;
 
-                File file = new File(fpath);
-                // Get the size of the file
-                //if (!file.exists())
-                try {
-                    file.createNewFile();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                byte[] bytes = new byte[16 * 1024];
-                InputStream in = null;
-                try {
-                    in = dataSocket.getInputStream();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                OutputStream out = null;
-                try {
-                    out = new FileOutputStream(file);
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
-                }
-                int count;
-                try {
-                    while ((count = in.read(bytes)) > 0) {
-                        out.write(bytes, 0, count);
-                        if (bytes[count] == '\0')// || count == 0 || (System.currentTimeMillis()-timeOut) > 5)
-                            break;
-
+                    File file = new File(fpath);
+                    // Get the size of the file
+                    //if (!file.exists())
+                    try {
+                        file.createNewFile();
+                    } catch (IOException e) {
+                        e.printStackTrace();
                     }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                    byte[] bytes = new byte[16 * 1024];
+                    InputStream in = null;
+                    try {
+                        in = dataSocket.getInputStream();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    OutputStream out = null;
+                    try {
+                        out = new FileOutputStream(file);
+                    } catch (FileNotFoundException e) {
+                        e.printStackTrace();
+                    }
+                    int count;
+                    try {
+                        while ((count = in.read(bytes)) > 0) {
+                            out.write(bytes, 0, count);
+                            if (bytes[count] == '\0')// || count == 0 || (System.currentTimeMillis()-timeOut) > 5)
+                                break;
+
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }else
+                    Updateconv.post(new updateUIThread(controlResponse));
 
             }
             if (method.contains("STOR")){
@@ -318,47 +328,53 @@ public class SecondActivity extends AppCompatActivity {
                     e.printStackTrace();
                 }
 
+                if(!(controlResponse.contains("332") || controlResponse.contains("450")) ) {
+                    Updateconv.post(new updateUIThread(controlResponse));
 
-                //Socket dataSocket = new Socket(serverAddress, 1220);
-                //System.out.println(dataSocket);
-                // BufferedReader SocketIn = new BufferedReader(new InputStreamReader(dataSocket.getInputStream()));
-                //this.socketIn = new BufferedReader(new InputStreamReader(this.dataSocket.getInputStream()));
-                String[] responseToken = method.split(" ");
-                String fileName = responseToken[1];
+                    //Socket dataSocket = new Socket(serverAddress, 1220);
+                    //System.out.println(dataSocket);
+                    // BufferedReader SocketIn = new BufferedReader(new InputStreamReader(dataSocket.getInputStream()));
+                    //this.socketIn = new BufferedReader(new InputStreamReader(this.dataSocket.getInputStream()));
+                    String[] responseToken = method.split(" ");
+                    String fileName = responseToken[1];
 
-                //  File file = new File(fileName);
-                // Get the size of the file
-                //if (!file.exists())
-                //file.createNewFile();
-                String fpath = "/sdcard/"+fileName;
-                File myFile = new File(fpath);
+                    //  File file = new File(fileName);
+                    // Get the size of the file
+                    //if (!file.exists())
+                    //file.createNewFile();
+                    String fpath = "/sdcard/" + fileName;
+                    File myFile = new File(fpath);
 
-                //Socket socket = server_socket.accept();
-                int count;
-                byte[] buffer = new byte[16 * 1024];
+                    //Socket socket = server_socket.accept();
+                    int count;
+                    byte[] buffer = new byte[16 * 1024];
 
-                OutputStream out = null;
-                try {
-                    out = dataSocket.getOutputStream();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                BufferedInputStream in = null;
-                try {
-                    in = new BufferedInputStream(new FileInputStream(myFile));
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
-                }
-                try {
-                    while ((count = in.read(buffer)) > 0) {
-                        out.write(buffer, 0, count);
-                        out.flush();
+                    OutputStream out = null;
+                    try {
+                        out = dataSocket.getOutputStream();
+                    } catch (IOException e) {
+                        e.printStackTrace();
                     }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                Updateconv.post(new updateUIThread(controlResponse));
+                    BufferedInputStream in = null;
+                    try {
+                        in = new BufferedInputStream(new FileInputStream(myFile));
+                    } catch (FileNotFoundException e) {
+                        e.printStackTrace();
+                    }
+                    try {
+                        while ((count = in.read(buffer)) > 0) {
+                            out.write(buffer, 0, count);
+                            out.flush();
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }else
+                    Updateconv.post(new updateUIThread(controlResponse));
+
             }
+
+
             if(method.contains("QUIT"))
             {	controlSocketOut.println(method);
 
